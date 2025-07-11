@@ -1,61 +1,65 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import HomeView from '@/views/Home.vue';
-import LoginView from '@/views/Login.vue';
-import TaskListView from '@/views/TaskList.vue';
-import TaskCreateView from '@/views/TaskCreate.vue';
-import TaskDetailView from '@/views/TaskDetail.vue';
-import ProfileView from '@/views/Profile.vue';
+import { createRouter, createWebHistory } from 'vue-router'
+import Home from '@/views/Home.vue'
+import Login from '@/views/Login.vue'
+import TaskList from '@/views/TaskList.vue'
+import TaskCreate from '@/views/TaskCreate.vue'
+import TaskDetail from '@/views/TaskDetail.vue'
+import Profile from '@/views/Profile.vue'
+import { useAuthStore } from '@/stores/auth'
 
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: HomeView,
+    component: Home,
     meta: { requiresAuth: true }
   },
   {
     path: '/login',
     name: 'Login',
-    component: LoginView
+    component: Login
   },
   {
     path: '/tasks',
     name: 'TaskList',
-    component: TaskListView,
+    component: TaskList,
     meta: { requiresAuth: true }
   },
   {
     path: '/tasks/create',
     name: 'TaskCreate',
-    component: TaskCreateView,
+    component: TaskCreate,
     meta: { requiresAuth: true }
   },
   {
     path: '/tasks/:id',
     name: 'TaskDetail',
-    component: TaskDetailView,
+    component: TaskDetail,
     meta: { requiresAuth: true }
   },
   {
     path: '/profile',
     name: 'Profile',
-    component: ProfileView,
+    component: Profile,
     meta: { requiresAuth: true }
   }
-];
+]
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes
-});
+})
 
-// 路由守卫
+// 路由守卫，验证登录状态
 router.beforeEach((to, from, next) => {
-  if (to.meta.requiresAuth && !localStorage.getItem('token')) {
-    next({ name: 'Login' });
+  const authStore = useAuthStore()
+  
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    next({ name: 'Login' })
   } else {
-    next();
+    next()
   }
-});
+})
 
-export default router;    
+export default router
+    

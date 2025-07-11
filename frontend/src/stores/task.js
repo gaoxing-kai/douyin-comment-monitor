@@ -1,127 +1,82 @@
-import { defineStore } from 'pinia';
-import { fetchTask, createTask, startTask, stopTask, deleteTask } from '@/api/task';
+import { defineStore } from 'pinia'
+import axios from 'axios'
 
 export const useTaskStore = defineStore('task', {
   state: () => ({
     tasks: [],
-    currentTask: null,
-    loading: false,
-    error: null
+    currentTask: null
   }),
-
+  
   actions: {
-    /**
-     * 获取任务详情
-     * @param {string} taskId - 任务ID
-     * @returns {Promise<Object>} - 任务详情
-     */
-    async fetchTask(taskId) {
-      this.loading = true;
-      this.error = null;
-      
+    async getTaskList(params) {
       try {
-        const response = await fetchTask(taskId);
-        this.currentTask = response.data;
-        return this.currentTask;
+        const response = await axios.get('/api/tasks', { params })
+        return response.data
       } catch (error) {
-        this.error = error.message;
-        throw error;
-      } finally {
-        this.loading = false;
+        console.error('获取任务列表失败:', error)
+        throw error
       }
     },
-
-    /**
-     * 创建任务
-     * @param {Object} data - 任务数据
-     * @returns {Promise<Object>} - 创建的任务
-     */
+    
+    async getTaskDetail(id) {
+      try {
+        const response = await axios.get(`/api/tasks/${id}`)
+        this.currentTask = response.data
+        return response.data
+      } catch (error) {
+        console.error('获取任务详情失败:', error)
+        throw error
+      }
+    },
+    
     async createTask(data) {
-      this.loading = true;
-      this.error = null;
-      
       try {
-        const response = await createTask(data);
-        this.tasks.push(response.data);
-        return response.data;
+        const response = await axios.post('/api/tasks', data)
+        return response.data
       } catch (error) {
-        this.error = error.message;
-        throw error;
-      } finally {
-        this.loading = false;
+        console.error('创建任务失败:', error)
+        throw error
       }
     },
-
-    /**
-     * 启动任务
-     * @param {string} taskId - 任务ID
-     * @returns {Promise<boolean>} - 操作结果
-     */
-    async startTask(taskId) {
-      this.loading = true;
-      this.error = null;
-      
+    
+    async updateTask(id, data) {
       try {
-        const response = await startTask(taskId);
-        if (response.data.success && this.currentTask && this.currentTask.id === taskId) {
-          this.currentTask.status = 'running';
-        }
-        return response.data.success;
+        const response = await axios.put(`/api/tasks/${id}`, data)
+        return response.data
       } catch (error) {
-        this.error = error.message;
-        throw error;
-      } finally {
-        this.loading = false;
+        console.error('更新任务失败:', error)
+        throw error
       }
     },
-
-    /**
-     * 停止任务
-     * @param {string} taskId - 任务ID
-     * @returns {Promise<boolean>} - 操作结果
-     */
-    async stopTask(taskId) {
-      this.loading = true;
-      this.error = null;
-      
+    
+    async deleteTask(id) {
       try {
-        const response = await stopTask(taskId);
-        if (response.data.success && this.currentTask && this.currentTask.id === taskId) {
-          this.currentTask.status = 'stopped';
-        }
-        return response.data.success;
+        await axios.delete(`/api/tasks/${id}`)
       } catch (error) {
-        this.error = error.message;
-        throw error;
-      } finally {
-        this.loading = false;
+        console.error('删除任务失败:', error)
+        throw error
       }
     },
-
-    /**
-     * 删除任务
-     * @param {string} taskId - 任务ID
-     * @returns {Promise<boolean>} - 操作结果
-     */
-    async deleteTask(taskId) {
-      this.loading = true;
-      this.error = null;
-      
+    
+    async startTask(id) {
       try {
-        const response = await deleteTask(taskId);
-        if (response.data.success) {
-          this.tasks = this.tasks.filter(task => task.id !== taskId);
-          if (this.currentTask && this.currentTask.id === taskId) {
-            this.currentTask = null;
-          }
-        }
-        return response.data.success;
+        const response = await axios.post(`/api/tasks/${id}/start`)
+        return response.data
       } catch (error) {
-        this.error = error.message;
-        throw error;
-      } finally {
-        this.loading = false;
+        console.error('启动任务失败:', error)
+        throw error
+      }
+    },
+    
+    async pauseTask(id) {
+      try {
+        const response = await axios.post(`/api/tasks/${id}/pause`)
+        return response.data
+      } catch (error) {
+        console.error('暂停任务失败:', error)
+        throw error
       }
     }
   }
-});    
+})
+    

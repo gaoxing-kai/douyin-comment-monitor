@@ -1,125 +1,93 @@
 <template>
   <div id="app">
-    <el-container>
-      <!-- 顶部导航栏 -->
+    <el-container class="app-container">
       <el-header>
         <div class="header-container">
           <div class="logo">抖音直播间评论监控系统</div>
           <el-menu
             :default-active="activeMenu"
-            class="el-menu-demo"
             mode="horizontal"
-            @select="handleSelect"
-          >
-            <el-menu-item index="home">首页</el-menu-item>
-            <el-menu-item index="tasks">任务管理</el-menu-item>
-            <el-menu-item index="profile">个人中心</el-menu-item>
+            background-color="#545c64"
+            text-color="#fff"
+            active-text-color="#ffd04b"
+            @select="handleSelect">
+            <el-menu-item index="1" route="/">
+              <i class="el-icon-s-home"></i>
+              <span>首页</span>
+            </el-menu-item>
+            <el-menu-item index="2" route="/tasks">
+              <i class="el-icon-s-management"></i>
+              <span>任务管理</span>
+            </el-menu-item>
+            <el-menu-item index="3" route="/profile">
+              <i class="el-icon-user"></i>
+              <span>个人中心</span>
+            </el-menu-item>
+            <el-menu-item index="logout" style="float: right;">
+              <i class="el-icon-switch-button"></i>
+              <span>退出登录</span>
+            </el-menu-item>
           </el-menu>
-          <div class="user-info">
-            <span>{{ username }}</span>
-            <el-button size="small" type="primary" @click="logout">退出登录</el-button>
-          </div>
         </div>
       </el-header>
-      
-      <!-- 主体内容 -->
       <el-main>
         <router-view />
       </el-main>
-      
-      <!-- 底部 -->
-      <el-footer>© 2025 抖音直播间评论监控系统</el-footer>
     </el-container>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
-const router = useRouter();
-const activeMenu = ref('home');
-const username = ref('');
+const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
 
-// 根据当前路由设置活动菜单
-onMounted(() => {
-  const path = router.currentRoute.value.path;
-  if (path.startsWith('/tasks')) {
-    activeMenu.value = 'tasks';
-  } else if (path.startsWith('/profile')) {
-    activeMenu.value = 'profile';
+const activeMenu = ref('1')
+
+const handleSelect = (key) => {
+  if (key === 'logout') {
+    authStore.logout()
+    router.push('/login')
   } else {
-    activeMenu.value = 'home';
+    const menuItem = document.querySelector(`el-menu-item[index="${key}"]`)
+    const routePath = menuItem?.getAttribute('route')
+    if (routePath) {
+      router.push(routePath)
+    }
+  }
+}
+
+onMounted(() => {
+  // 根据当前路由设置激活菜单
+  const pathToMenuIndex = {
+    '/': '1',
+    '/tasks': '2',
+    '/profile': '3'
   }
   
-  // 从本地存储获取用户名
-  username.value = localStorage.getItem('username') || '用户';
-});
-
-// 处理菜单选择
-const handleSelect = (key) => {
-  switch (key) {
-    case 'home':
-      router.push('/');
-      break;
-    case 'tasks':
-      router.push('/tasks');
-      break;
-    case 'profile':
-      router.push('/profile');
-      break;
-  }
-};
-
-// 退出登录
-const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('username');
-  router.push('/login');
-};
+  activeMenu.value = pathToMenuIndex[route.path] || '1'
+})
 </script>
 
 <style scoped>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+.app-container {
   height: 100vh;
-}
-
-.el-header {
-  background-color: #2c3e50;
-  color: #fff;
-  line-height: 60px;
 }
 
 .header-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 100%;
-  padding: 0 20px;
 }
 
 .logo {
-  font-size: 20px;
-  font-weight: bold;
+  font-size: 1.5rem;
+  color: #fff;
+  padding: 0 20px;
 }
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.el-main {
-  padding: 20px;
-}
-
-.el-footer {
-  background-color: #f0f2f5;
-  line-height: 60px;
-}
-</style>    
+</style>
+    
